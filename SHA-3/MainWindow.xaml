@@ -3,17 +3,244 @@
     x:Class="SHA_3.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:SHA_3"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Title="SHA-3">
-
-    <Window.SystemBackdrop>
-        <MicaBackdrop />
-    </Window.SystemBackdrop>
+    Title="SHA-3 Hash Generator">
 
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title Bar -->
+        <Grid Grid.Row="0" Background="{ThemeResource LayerFillColorDefaultBrush}" Padding="16,0">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <FontIcon Glyph="&#xE72E;" FontSize="20" Foreground="{ThemeResource AccentFillColorDefaultBrush}" Margin="0,0,12,0"/>
+                <TextBlock Text="SHA-3 Hash Generator" 
+                          FontSize="16" 
+                          FontWeight="SemiBold"
+                          VerticalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Main Content -->
+        <NavigationView Grid.Row="1" 
+                       x:Name="NavView"
+                       IsBackButtonVisible="Collapsed"
+                       IsSettingsVisible="False"
+                       PaneDisplayMode="Top"
+                       SelectionChanged="NavigationView_SelectionChanged">
+            <NavigationView.MenuItems>
+                <NavigationViewItem Content="Text Hash" Tag="text" Icon="Edit"/>
+                <NavigationViewItem Content="File Hash" Tag="file" Icon="Document"/>
+                <NavigationViewItem Content="Verify Hash" Tag="verify" Icon="Accept"/>
+            </NavigationView.MenuItems>
+
+            <ScrollViewer HorizontalAlignment="Center" VerticalAlignment="Top">
+                <StackPanel Spacing="20" MaxWidth="900" Margin="24" HorizontalAlignment="Center">
+                    
+                    <!-- Text Hash Tab Content -->
+                    <StackPanel x:Name="TextHashPanel" Visibility="Visible" Spacing="16">
+                        <TextBlock Text="Generate Hash from Text" 
+                                 FontSize="24" 
+                                 FontWeight="Bold"/>
+                        
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="SHA-3 Algorithm:" FontWeight="SemiBold"/>
+                            <ComboBox x:Name="TextAlgorithmComboBox" 
+                                    SelectedIndex="1"
+                                    HorizontalAlignment="Stretch">
+                                <ComboBoxItem Content="SHA3-224"/>
+                                <ComboBoxItem Content="SHA3-256"/>
+                                <ComboBoxItem Content="SHA3-384"/>
+                                <ComboBoxItem Content="SHA3-512"/>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="Input Text:" FontWeight="SemiBold"/>
+                            <TextBox x:Name="InputTextBox" 
+                                   PlaceholderText="Enter text to hash..."
+                                   TextWrapping="Wrap"
+                                   AcceptsReturn="True"
+                                   MinHeight="120"
+                                   TextChanged="InputTextBox_TextChanged"/>
+                        </StackPanel>
+
+                        <Button x:Name="GenerateTextHashButton" 
+                              Content="Generate Hash"
+                              Style="{StaticResource AccentButtonStyle}"
+                              HorizontalAlignment="Stretch"
+                              Click="GenerateTextHashButton_Click">
+                            <Button.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="Enter" Modifiers="Control"/>
+                            </Button.KeyboardAccelerators>
+                        </Button>
+
+                        <StackPanel Spacing="12" x:Name="TextResultPanel" Visibility="Collapsed">
+                            <TextBlock Text="Hash Result:" FontWeight="SemiBold"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="TextHashResultBox" 
+                                       IsReadOnly="True"
+                                       TextWrapping="Wrap"
+                                       FontFamily="Consolas"
+                                       Grid.Column="0"/>
+                                <Button Grid.Column="1" 
+                                      Margin="8,0,0,0"
+                                      Click="CopyTextHash_Click"
+                                      ToolTipService.ToolTip="Copy to clipboard">
+                                    <FontIcon Glyph="&#xE8C8;" FontSize="16"/>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- File Hash Tab Content -->
+                    <StackPanel x:Name="FileHashPanel" Visibility="Collapsed" Spacing="16">
+                        <TextBlock Text="Generate Hash from File" 
+                                 FontSize="24" 
+                                 FontWeight="Bold"/>
+                        
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="SHA-3 Algorithm:" FontWeight="SemiBold"/>
+                            <ComboBox x:Name="FileAlgorithmComboBox" 
+                                    SelectedIndex="1"
+                                    HorizontalAlignment="Stretch">
+                                <ComboBoxItem Content="SHA3-224"/>
+                                <ComboBoxItem Content="SHA3-256"/>
+                                <ComboBoxItem Content="SHA3-384"/>
+                                <ComboBoxItem Content="SHA3-512"/>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="Select File:" FontWeight="SemiBold"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="FilePathTextBox" 
+                                       IsReadOnly="True"
+                                       PlaceholderText="No file selected..."
+                                       Grid.Column="0"/>
+                                <Button x:Name="BrowseFileButton"
+                                      Content="Browse"
+                                      Margin="8,0,0,0"
+                                      Grid.Column="1"
+                                      Click="BrowseFileButton_Click"/>
+                            </Grid>
+                        </StackPanel>
+
+                        <Button x:Name="GenerateFileHashButton" 
+                              Content="Generate Hash"
+                              Style="{StaticResource AccentButtonStyle}"
+                              HorizontalAlignment="Stretch"
+                              Click="GenerateFileHashButton_Click"
+                              IsEnabled="False"/>
+
+                        <ProgressBar x:Name="FileHashProgressBar" 
+                                   Visibility="Collapsed"
+                                   IsIndeterminate="True"/>
+
+                        <StackPanel Spacing="12" x:Name="FileResultPanel" Visibility="Collapsed">
+                            <TextBlock Text="File Information:" FontWeight="SemiBold"/>
+                            <InfoBar x:Name="FileInfoBar" IsOpen="True" IsClosable="False" Severity="Informational"/>
+                            
+                            <TextBlock Text="Hash Result:" FontWeight="SemiBold" Margin="0,12,0,0"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="FileHashResultBox" 
+                                       IsReadOnly="True"
+                                       TextWrapping="Wrap"
+                                       FontFamily="Consolas"
+                                       Grid.Column="0"/>
+                                <Button Grid.Column="1" 
+                                      Margin="8,0,0,0"
+                                      Click="CopyFileHash_Click"
+                                      ToolTipService.ToolTip="Copy to clipboard">
+                                    <FontIcon Glyph="&#xE8C8;" FontSize="16"/>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Verify Hash Tab Content -->
+                    <StackPanel x:Name="VerifyHashPanel" Visibility="Collapsed" Spacing="16">
+                        <TextBlock Text="Verify File Hash" 
+                                 FontSize="24" 
+                                 FontWeight="Bold"/>
+                        
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="SHA-3 Algorithm:" FontWeight="SemiBold"/>
+                            <ComboBox x:Name="VerifyAlgorithmComboBox" 
+                                    SelectedIndex="1"
+                                    HorizontalAlignment="Stretch">
+                                <ComboBoxItem Content="SHA3-224"/>
+                                <ComboBoxItem Content="SHA3-256"/>
+                                <ComboBoxItem Content="SHA3-384"/>
+                                <ComboBoxItem Content="SHA3-512"/>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="Select File:" FontWeight="SemiBold"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="VerifyFilePathTextBox" 
+                                       IsReadOnly="True"
+                                       PlaceholderText="No file selected..."
+                                       Grid.Column="0"/>
+                                <Button x:Name="BrowseVerifyFileButton"
+                                      Content="Browse"
+                                      Margin="8,0,0,0"
+                                      Grid.Column="1"
+                                      Click="BrowseVerifyFileButton_Click"/>
+                            </Grid>
+                        </StackPanel>
+
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="Expected Hash Value:" FontWeight="SemiBold"/>
+                            <TextBox x:Name="ExpectedHashTextBox" 
+                                   PlaceholderText="Paste the hash value to verify..."
+                                   TextWrapping="Wrap"
+                                   FontFamily="Consolas"
+                                   MinHeight="60"
+                                   TextChanged="ExpectedHashTextBox_TextChanged"/>
+                        </StackPanel>
+
+                        <Button x:Name="VerifyHashButton" 
+                              Content="Verify Hash"
+                              Style="{StaticResource AccentButtonStyle}"
+                              HorizontalAlignment="Stretch"
+                              Click="VerifyHashButton_Click"
+                              IsEnabled="False"/>
+
+                        <ProgressBar x:Name="VerifyProgressBar" 
+                                   Visibility="Collapsed"
+                                   IsIndeterminate="True"/>
+
+                        <InfoBar x:Name="VerifyResultInfoBar" 
+                               Visibility="Collapsed"
+                               IsOpen="False"
+                               IsClosable="False"/>
+                    </StackPanel>
+
+                </StackPanel>
+            </ScrollViewer>
+        </NavigationView>
 
     </Grid>
 </Window>
