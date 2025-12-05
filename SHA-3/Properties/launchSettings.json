@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "SHA-3 (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "SHA-3 (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
